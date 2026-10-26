@@ -1,0 +1,12 @@
+{
+  "name": "goodhart",
+  "version": "0.1.0",
+  "description": "Red-team your rubric: generate gamed responses, score them blind, and find out which criteria reward polish over quality.",
+  "author": {
+    "name": "Dina Nawara"
+  },
+  "homepage": "https://github.com/YOUR-GITHUB-USERNAME/goodhart",
+  "repository": "https://github.com/YOUR-GITHUB-USERNAME/goodhart",
+  "license": "MIT",
+  "keywords": ["rubric", "evaluation", "llm-as-judge", "evals", "grading", "red-team", "goodhart"]
+}

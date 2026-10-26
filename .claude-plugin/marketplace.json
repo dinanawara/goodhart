@@ -1,0 +1,14 @@
+{
+  "name": "goodhart",
+  "description": "Red-team evaluation rubrics before you trust them.",
+  "owner": {
+    "name": "Dina Nawara"
+  },
+  "plugins": [
+    {
+      "name": "goodhart",
+      "source": "./",
+      "description": "Red-team your rubric: generate gamed responses, score them blind, and find out which criteria reward polish over quality."
+    }
+  ]
+}
