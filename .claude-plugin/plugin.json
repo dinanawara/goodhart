@@ -1,7 +1,7 @@
 {
   "name": "goodhart",
-  "version": "0.1.0",
-  "description": "Red-team your rubric: generate gamed responses, score them blind, and find out which criteria reward polish over quality.",
+  "version": "0.2.0",
+  "description": "Red-team LLM-as-judge and QA rubrics: gamed responses, independent blind scoring, and held-out tests of every fix.",
   "author": {
     "name": "Dina Nawara"
   },

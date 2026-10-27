@@ -73,6 +73,8 @@ Closes: whatever exploit the example shows. Use it sparingly, because a rubric w
 
 ## Anti-patterns when hardening
 
-- **Over-correction:** penalizing all formatting, all length or all hedging. The honest baseline gets hurt. Step 7 catches this.
+- **Over-correction:** penalizing all formatting, all length or all hedging. Honest work gets hurt. Held-out honest variations (Step 8) catch this.
+- **Over-broad gates:** a gate that caps the whole score is powerful, so word it narrowly. In the support-reply example, "states a detail the policy does not support" (meant for invented statistics) also capped an honest offer to follow up, dropping it below seven gamed replies. Name what the gate targets ("statistics, reference numbers, dates, guaranteed outcomes") and what it doesn't ("offers to help further").
+- **"Ignore" instead of "penalize":** telling a judge to *ignore* self-praise or notes to the grader can make it skip them instead of counting them as filler. If the text costs the reader something, say how it is scored.
 - **Keyword bans:** "Responses that use the word 'leverage' lose a point." Easy to evade and punishes honest writers.
 - **Rubric bloat:** adding a new criterion for every exploit. Prefer gates and anchors on existing criteria.

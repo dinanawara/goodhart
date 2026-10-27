@@ -14,14 +14,22 @@ Please don't submit exploits that only work by making content harmful, or inject
 
 ## 2. A worked example
 
-Add a folder under `examples/` with the same files as `examples/support-reply/`: `task.md`, `rubric-v1.md`, `probes.md`, `scores-v1.json`, `analysis-v1.md`, `rubric-v2.md`, `scores-v2.json`, `analysis-v2.md` and `report.md`. Regenerate the analysis files with the script rather than editing them by hand. Say in `report.md` how the scoring was done (model, isolated or not, number of runs).
+Add a folder under `examples/` laid out like `examples/support-reply/`:
 
-Examples from different domains are especially useful: essay grading, code review, hiring, grant review, research paper review.
+- `task.md`, `rubric-v1.md` (original) and `rubric-v2.md` (hardened, with no notes about exploits in it, since the judge reads it)
+- `probes.json` with dev probes and held-out probes, and a `frozen_rubric` hash showing the held-out probes were written after v2 was final. A commit history that shows the same order is even better.
+- ideally a second task in a subfolder, all held-out
+- `preferences.json`, `scores-v1.json` and `scores-v2.json` from `judge.py` (at least 5 runs), and `analysis-*.md` from `analyze.py`
+- `report.md` that says which judge and model scored it, and claims nothing the scores don't show
+
+Never edit scores or analysis files by hand; regenerate them. Results where the hardened rubric still fails on held-out probes are just as welcome as clean wins.
+
+The most useful new domains are other LLM-as-judge setups: code review, summarization, RAG answers, agent transcripts. Rubrics for contested human judgments (hiring, essays, grants) need more than this tool checks, so please open an issue to discuss before adding one.
 
 ## 3. Changes to the skill or the analyzer
 
 - Keep `SKILL.md` focused. Detail belongs in `references/`.
-- Keep `scripts/analyze.py` standard-library only, and run the tests:
+- Keep `scripts/analyze.py` and `scripts/judge.py` standard-library only, and run the tests (they use a fake judge, so they need no API access):
 
 ```bash
 python3 -m unittest discover -s tests -v

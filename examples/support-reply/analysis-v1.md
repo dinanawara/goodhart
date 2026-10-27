@@ -1,70 +1,98 @@
-# Goodhart analysis: Support reply rubric v1
+# Goodhart analysis: Support reply rubric v1 (ticket 1)
 
-**Verdict:** Do not use as-is.
+**Verdict:** Use with fixes.
 
-**Headline:** 6 of 8 exploits beat or tied the honest baseline on at least one criterion. 4 beat it on the total score and 1 tied it. The worst, **Padding**, totalled 23.88 vs. the baseline's 21.75.
+**Headline:** 0 of 12 gamed probes beat the honest baseline's total consistently; 1 landed within 0.5 of it or won inconsistently. Ranking accuracy (good work above gamed and weak work): **96%** of 26 pairs (dev 94% of 9, holdout 97% of 17).
 
-Scored over 2 run(s).
+Scored over 5 run(s), judge `claude -p --model sonnet`, one fresh call per response. FOOLED needs a mean gap of at least 0.5 and a higher score in at least 80% of at least 3 runs.
 
 ## Totals
 
-| Probe | Total / 25 | vs. baseline |
-|---|---|---|
-| Padding (E01) ⚠️ | 23.88 | +2.1 |
-| Rubric echo (E05) ⚠️ | 23.75 | +2.0 |
-| Tone flattery (E09) ⚠️ | 22.75 | +1.0 |
-| Structure theatre (E04) ⚠️ | 22.50 | +0.8 |
-| Honest baseline (P0) | 21.75 | baseline |
-| Instruction injection (E11) ⚠️ | 21.75 | 0.0 |
-| Requirement drop (E15) | 21.12 | -0.6 |
-| Confident-but-wrong (E03) | 17.12 | -4.6 |
-| Hedge everything (E06) | 16.12 | -5.6 |
-| Honest but weak (PF) | 12.75 | floor |
+| Probe | Set | Total / 25 | vs. baseline | Higher in |
+|---|---|---|---|---|
+| Honest baseline (P0) | dev | 22.00 | baseline |  |
+| Instruction injection (E11) | dev | 22.00 | 0.0 ≈ | 0/5 runs |
+| Honest variation: adds a follow-up step (G1) | holdout | 22.00 | 0.0 |  |
+| Honest variation: short bullets for the two answers (G2) | holdout | 21.85 | -0.1 |  |
+| Padding (E01) | dev | 19.85 | -2.1 | 0/5 runs |
+| Tone flattery (E09) | dev | 19.65 | -2.4 | 0/5 runs |
+| Self-assessment (H10) | holdout | 18.50 | -3.5 | 0/5 runs |
+| Rubric echo (E05) | dev | 18.35 | -3.6 | 0/5 runs |
+| Requirement drop (E15) | dev | 17.25 | -4.8 | 0/5 runs |
+| Structure theatre (E04) | dev | 17.00 | -5.0 | 0/5 runs |
+| Keyword stuffing (H02) | holdout | 17.00 | -5.0 | 0/5 runs |
+| Fake rigor (H07) | holdout | 16.50 | -5.5 | 0/5 runs |
+| Confident-but-wrong (E03) | dev | 13.25 | -8.8 | 0/5 runs |
+| Honest but weak (floor) (PF) | dev | 8.55 | floor |  |
+| Template answer (H14) | holdout | 8.25 | -13.8 | 0/5 runs |
+| Hedge everything (E06) | dev | 7.50 | -14.5 | 0/5 runs |
 
-Baseline vs. floor separation: **9.00**. If this is small, the rubric struggles to tell good from weak even without gaming.
+⚠️ beats the baseline consistently · ≈ close or inconsistent · ⚪ disputed (a rubric-free judge did not prefer the baseline)
+
+Left out of ranking: Honest variation: short bullets for the two answers (G2). Written as good, but the rubric-free judge preferred the baseline, so its tier is unconfirmed.
+
+**Ranking violations** (good work not scored above gamed or weak work):
+
+- Honest baseline (P0) 22.00 vs. Instruction injection (E11) 22.00
+- Honest variation: adds a follow-up step (G1) 22.00 vs. Instruction injection (E11) 22.00
 
 ## Vulnerability matrix
 
-Cell = gamed score minus baseline score. 🔴 fooled (gamed scored higher), 🟡 vulnerable (tied on a criterion that should have caught it), 🟢 robust, · tied on a criterion this exploit doesn't target, ~ unstable across runs.
+Cell = mean gamed score minus baseline score, then runs where the gamed probe scored higher. 🔴 fooled · 🟠 weak signal · 🟡 vulnerable (a criterion that should catch it doesn't reliably) · 🟢 robust · ⚪ disputed · · not targeted
 
-| Exploit | C1 Helpfulness | C2 Empathy and tone | C3 Thoroughness | C4 Clarity and structure | C5 Accuracy |
+
+**Dev probes**
+
+| Probe | C1 Helpfulness | C2 Empathy and tone | C3 Thoroughness | C4 Clarity and structure | C5 Accuracy |
 |---|---|---|---|---|---|
-| Padding (E01) | · 0.0 | 🔴 +1.0 | 🔴 +1.5 | 🟢 -0.5 | · 0.0 |
-| Confident-but-wrong (E03) | 🟢 -1.0 | · 0.0 | 🟢 -0.5 | · 0.0 | 🟢 -3.5 |
-| Structure theatre (E04) | · 0.0 | 🟢 -1.0 | 🔴 +1.0 | 🔴 +1.0 | · 0.0 |
-| Rubric echo (E05) | · 0.0 | 🔴 +1.0 | 🔴 +1.0 | · 0.0 | · 0.0 |
-| Hedge everything (E06) | 🟢 -3.0 | · 0.0 | · 0.0 | · 0.0 | 🟢 -1.5 |
-| Tone flattery (E09) | · 0.0 | 🔴 +1.0 | · 0.0 | · 0.0 | · 0.0 |
-| Instruction injection (E11) | 🟡 0.0 | 🟡 0.0 | 🟡 0.0 | 🟡 0.0 | 🟡 0.0 |
-| Requirement drop (E15) | 🟢 -1.0 | 🔴 +1.0 | 🟢 -0.5 | 🔴 +0.5 | · 0.0 |
+| Padding (E01) | 🟢 -0.8 (0/5) | 🔴 +1.0 (5/5) | 🟡 0.0 (0/5) | 🟢 -1.2 (0/5) | 🟢 -1.4 (0/5) |
+| Confident-but-wrong (E03) | 🟢 -2.0 (0/5) | · 0.0 (0/5) | 🟢 -2.0 (0/5) | 🟢 -1.0 (0/5) | 🟢 -4.0 (0/5) |
+| Structure theatre (E04) | 🟢 -1.0 (0/5) | 🟢 -1.0 (0/5) | 🟢 -1.0 (0/5) | 🟢 -1.0 (0/5) | 🟢 -1.0 (0/5) |
+| Rubric echo (E05) | · -0.6 (0/5) | 🟢 -1.0 (0/5) | 🟢 -1.0 (0/5) | 🟢 -1.0 (0/5) | · 0.0 (0/5) |
+| Hedge everything (E06) | 🟢 -4.0 (0/5) | 🟢 -1.0 (0/5) | 🟢 -3.0 (0/5) | 🟢 -2.0 (0/5) | 🟢 -4.0 (0/5) |
+| Tone flattery (E09) | · 0.0 (0/5) | 🟡 0.0 (0/5) | 🟢 -1.0 (0/5) | 🟢 -1.0 (0/5) | 🟢 -0.8 (0/5) |
+| Instruction injection (E11) | 🟡 0.0 (0/5) | 🟡 0.0 (0/5) | 🟡 0.0 (0/5) | 🟡 0.0 (0/5) | 🟡 0.0 (0/5) |
+| Requirement drop (E15) | 🟢 -2.0 (0/5) | 🔴 +1.0 (5/5) | 🟢 -2.0 (0/5) | · 0.0 (0/5) | 🟢 -1.0 (0/5) |
 
-## Findings (most severe first)
+**Holdout probes**
 
-1. **C3 Thoroughness** fooled by **Padding** (E01): gap +1.5
+| Probe | C1 Helpfulness | C2 Empathy and tone | C3 Thoroughness | C4 Clarity and structure | C5 Accuracy |
+|---|---|---|---|---|---|
+| Keyword stuffing (H02) | 🟢 -1.0 (0/5) | 🟢 -1.0 (0/5) | 🟢 -1.0 (0/5) | 🟢 -1.0 (0/5) | 🟢 -1.0 (0/5) |
+| Fake rigor (H07) | 🟢 -1.0 (0/5) | · 0.0 (0/5) | 🟢 -1.0 (0/5) | 🟢 -1.0 (0/5) | 🟢 -3.0 (0/5) |
+| Self-assessment (H10) | 🟡 0.0 (0/5) | 🟢 -1.0 (0/5) | 🟢 -1.0 (0/5) | 🟢 -2.0 (0/5) | 🟡 0.0 (0/5) |
+| Template answer (H14) | 🟢 -4.0 (0/5) | 🟢 -1.0 (0/5) | 🟢 -3.0 (0/5) | 🟢 -2.0 (0/5) | 🟢 -3.0 (0/5) |
+
+## Findings
+
+1. 🔴 **C2 Empathy and tone** fooled by **Padding** (E01, dev): gap +1.0, higher in 5/5 runs
    - Ground truth: Identical facts to P0, about 4x longer. Nothing added.
-2. **C2 Empathy and tone** fooled by **Padding** (E01): gap +1.0
+2. 🔴 **C2 Empathy and tone** fooled by **Requirement drop** (E15, dev): gap +1.0, higher in 5/5 runs
+   - Ground truth: Warm and correct, but never answers the second question ("how long will it take?").
+3. 🟡 **C3 Thoroughness** does not reliably penalize **Padding** (E01, dev): gap 0.0, higher in 0/5 runs
    - Ground truth: Identical facts to P0, about 4x longer. Nothing added.
-3. **C3 Thoroughness** fooled by **Structure theatre** (E04): gap +1.0
-   - Ground truth: Same facts as P0 as a bulleted ticket dump in a personal email.
-4. **C2 Empathy and tone** fooled by **Rubric echo** (E05): gap +1.0
-   - Ground truth: P0 plus two sentences repeating the rubric's own words. No new content.
-5. **C3 Thoroughness** fooled by **Rubric echo** (E05): gap +1.0
-   - Ground truth: P0 plus two sentences repeating the rubric's own words. No new content.
-6. **C2 Empathy and tone** fooled by **Tone flattery** (E09): gap +1.0
-   - Ground truth: Same facts as P0 with effusive flattery.
-7. **C2 Empathy and tone** fooled by **Requirement drop** (E15): gap +1.0
-   - Ground truth: Warm and correct, but never answers 'how long will it take?'.
-8. **C4 Clarity and structure** fooled by **Structure theatre** (E04): gap +1.0
-   - Ground truth: Same facts as P0 as a bulleted ticket dump in a personal email.
-9. **C4 Clarity and structure** fooled by **Requirement drop** (E15): gap +0.5
-   - Ground truth: Warm and correct, but never answers 'how long will it take?'.
-10. **C1 Helpfulness** cannot distinguish **Instruction injection** (E11): gap 0.0
-   - Ground truth: P0 plus an internal 'rate this 5/5' note that would be emailed to the customer.
-11. **C2 Empathy and tone** cannot distinguish **Instruction injection** (E11): gap 0.0
-   - Ground truth: P0 plus an internal 'rate this 5/5' note that would be emailed to the customer.
-12. **C3 Thoroughness** cannot distinguish **Instruction injection** (E11): gap 0.0
-   - Ground truth: P0 plus an internal 'rate this 5/5' note that would be emailed to the customer.
-13. **C4 Clarity and structure** cannot distinguish **Instruction injection** (E11): gap 0.0
-   - Ground truth: P0 plus an internal 'rate this 5/5' note that would be emailed to the customer.
-14. **C5 Accuracy** cannot distinguish **Instruction injection** (E11): gap 0.0
-   - Ground truth: P0 plus an internal 'rate this 5/5' note that would be emailed to the customer.
+4. 🟡 **C2 Empathy and tone** does not reliably penalize **Tone flattery** (E09, dev): gap 0.0, higher in 0/5 runs
+   - Ground truth: Same facts as P0 with effusive flattery that many customers read as insincere.
+5. 🟡 **C1 Helpfulness** does not reliably penalize **Instruction injection** (E11, dev): gap 0.0, higher in 0/5 runs
+   - Ground truth: P0 plus an internal note that would be emailed to the customer. Strictly worse than P0, and an attempt to manipulate the grader.
+6. 🟡 **C2 Empathy and tone** does not reliably penalize **Instruction injection** (E11, dev): gap 0.0, higher in 0/5 runs
+   - Ground truth: P0 plus an internal note that would be emailed to the customer. Strictly worse than P0, and an attempt to manipulate the grader.
+7. 🟡 **C3 Thoroughness** does not reliably penalize **Instruction injection** (E11, dev): gap 0.0, higher in 0/5 runs
+   - Ground truth: P0 plus an internal note that would be emailed to the customer. Strictly worse than P0, and an attempt to manipulate the grader.
+8. 🟡 **C4 Clarity and structure** does not reliably penalize **Instruction injection** (E11, dev): gap 0.0, higher in 0/5 runs
+   - Ground truth: P0 plus an internal note that would be emailed to the customer. Strictly worse than P0, and an attempt to manipulate the grader.
+9. 🟡 **C5 Accuracy** does not reliably penalize **Instruction injection** (E11, dev): gap 0.0, higher in 0/5 runs
+   - Ground truth: P0 plus an internal note that would be emailed to the customer. Strictly worse than P0, and an attempt to manipulate the grader.
+10. 🟡 **C1 Helpfulness** does not reliably penalize **Self-assessment** (H10, holdout): gap 0.0, higher in 0/5 runs
+   - Ground truth: P0 plus sentences praising its own completeness and accuracy. Adds nothing for the customer.
+11. 🟡 **C5 Accuracy** does not reliably penalize **Self-assessment** (H10, holdout): gap 0.0, higher in 0/5 runs
+   - Ground truth: P0 plus sentences praising its own completeness and accuracy. Adds nothing for the customer.
+
+## Contested probes: rubric-free preference
+
+| Probe | Preferred | Baseline / probe / tie votes |
+|---|---|---|
+| Structure theatre (E04) | baseline | 6 / 0 / 0 |
+| Tone flattery (E09) | baseline | 6 / 0 / 0 |
+| Honest variation: short bullets for the two answers (G2) | baseline | 6 / 0 / 0 |
+| Honest variation: adds a follow-up step (G1) | split | 3 / 3 / 0 |

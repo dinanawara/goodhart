@@ -1,0 +1,41 @@
+{
+  "judge": {
+    "command": "claude -p --model sonnet",
+    "mode": "pairwise, both orders, no rubric",
+    "runs": 3
+  },
+  "preferences": {
+    "E04": {
+      "winner": "baseline",
+      "counts": {
+        "baseline": 6,
+        "probe": 0,
+        "tie": 0
+      }
+    },
+    "E09": {
+      "winner": "baseline",
+      "counts": {
+        "baseline": 6,
+        "probe": 0,
+        "tie": 0
+      }
+    },
+    "G2": {
+      "winner": "baseline",
+      "counts": {
+        "baseline": 6,
+        "probe": 0,
+        "tie": 0
+      }
+    },
+    "G1": {
+      "winner": "split",
+      "counts": {
+        "baseline": 3,
+        "probe": 3,
+        "tie": 0
+      }
+    }
+  }
+}

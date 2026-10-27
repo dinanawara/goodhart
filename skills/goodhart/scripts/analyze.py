@@ -156,28 +156,42 @@ def analyze(data: dict, min_runs: int = 3, min_gap: float = 0.5,
             status = BELOW
         overall[pid] = {"diff": round(d, 2), "wins": sum(x > EPS for x in diffs), "status": status}
 
-    rank = {"good": [], "low": []}
+    rank = {"good": [], "low": [], "unconfirmed": []}
     for pid, p in probes.items():
         tier = p.get("tier") or ("good" if pid == base else "weak" if pid == floor
                                  else "gamed" if p.get("exploit") else None)
-        if tier == "good":
+        if tier == "good" and p.get("kind") == "contested" and pid != base \
+                and prefs.get(pid, {}).get("winner") == "baseline":
+            rank["unconfirmed"].append(pid)  # the rubric-free judge rated it worse than P0
+        elif tier == "good":
             rank["good"].append(pid)
         elif tier in ("gamed", "weak") and not disputed(p):
             rank["low"].append(pid)
     pairs, violations = 0, []
     score = 0.0
+    per_set = {}
     for g in rank["good"]:
         for low in rank["low"]:
             pairs += 1
             if totals[g] > totals[low] + EPS:
-                score += 1
+                s = 1.0
             elif abs(totals[g] - totals[low]) <= EPS:
-                score += 0.5
-                violations.append((g, low))
+                s = 0.5
             else:
+                s = 0.0
+            score += s
+            if s < 1:
                 violations.append((g, low))
+            # a pair belongs to the held-out set if either side was written after the freeze
+            in_set = "holdout" if "holdout" in (probes[g].get("set"), probes[low].get("set")) \
+                else probes[low].get("set", "dev")
+            acc = per_set.setdefault(in_set, [0.0, 0])
+            acc[0] += s
+            acc[1] += 1
     ranking = {"accuracy": round(score / pairs, 3) if pairs else None,
-               "pairs": pairs, "violations": violations}
+               "pairs": pairs, "violations": violations, "unconfirmed": rank["unconfirmed"],
+               "by_set": {k: {"accuracy": round(v[0] / v[1], 3), "pairs": v[1]}
+                          for k, v in sorted(per_set.items())}}
 
     by_set = {}
     for pid in gamed:
@@ -239,7 +253,12 @@ def to_markdown(r: dict) -> str:
             f"won inconsistently.")
     if r["ranking"]["accuracy"] is not None:
         line += (f" Ranking accuracy (good work above gamed and weak work): "
-                 f"**{r['ranking']['accuracy']:.0%}** of {r['ranking']['pairs']} pairs.")
+                 f"**{r['ranking']['accuracy']:.0%}** of {r['ranking']['pairs']} pairs")
+        sets = r["ranking"]["by_set"]
+        if len(sets) > 1:
+            line += " (" + ", ".join(f"{k} {v['accuracy']:.0%} of {v['pairs']}"
+                                     for k, v in sets.items()) + ")"
+        line += "."
     out.append(line)
     judge = r.get("judge") or {}
     how = f"{n} run(s)"
@@ -273,6 +292,10 @@ def to_markdown(r: dict) -> str:
                "⚪ disputed (a rubric-free judge did not prefer the baseline)")
 
     rk = r["ranking"]
+    if rk["unconfirmed"]:
+        names = ", ".join(f"{plabel[p]} ({p})" for p in rk["unconfirmed"])
+        out.append(f"\nLeft out of ranking: {names}. Written as good, but the rubric-free judge "
+                   "preferred the baseline, so its tier is unconfirmed.")
     if rk["violations"]:
         out.append("\n**Ranking violations** (good work not scored above gamed or weak work):\n")
         for g, low in rk["violations"]:

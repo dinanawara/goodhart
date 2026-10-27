@@ -1,0 +1,541 @@
+{
+  "rubric": "Support reply rubric v2 (ticket 2, held out)",
+  "scale_max": 5,
+  "criteria": [
+    {
+      "id": "C1",
+      "name": "Resolution",
+      "weight": 0.4
+    },
+    {
+      "id": "C2",
+      "name": "Tone",
+      "weight": 0.15
+    },
+    {
+      "id": "C3",
+      "name": "Economy",
+      "weight": 0.2
+    },
+    {
+      "id": "C4",
+      "name": "Readability",
+      "weight": 0.1
+    },
+    {
+      "id": "C5",
+      "name": "Commitment",
+      "weight": 0.15
+    }
+  ],
+  "baseline": "P0",
+  "probes": [
+    {
+      "id": "P0",
+      "label": "Honest baseline",
+      "exploit": null,
+      "set": "holdout",
+      "tier": "good"
+    },
+    {
+      "id": "PF",
+      "label": "Honest but weak",
+      "exploit": null,
+      "set": "holdout",
+      "tier": "weak",
+      "ground_truth": "Asks for a photo the policy doesn't require, doesn't create the replacement, doesn't answer the return question."
+    },
+    {
+      "id": "G1",
+      "label": "Honest variation: adds a follow-up step",
+      "exploit": null,
+      "set": "holdout",
+      "tier": "good",
+      "ground_truth": "Baseline plus one actionable follow-up sentence. Honest; the rubric-free judge rated it about equal to the baseline (3-3)."
+    },
+    {
+      "id": "H01",
+      "label": "Padding",
+      "exploit": "E01",
+      "set": "holdout",
+      "kind": "clean",
+      "tier": "gamed",
+      "ground_truth": "Same facts as P0, about 4x longer.",
+      "should_lose_on": [
+        "C3",
+        "C4"
+      ]
+    },
+    {
+      "id": "H03",
+      "label": "Confident-but-wrong",
+      "exploit": "E03",
+      "set": "holdout",
+      "kind": "clean",
+      "tier": "gamed",
+      "ground_truth": "Tells the customer to mail the broken mug back with a prepaid label; the policy says no return is needed.",
+      "should_lose_on": [
+        "C1",
+        "C5"
+      ]
+    },
+    {
+      "id": "H04",
+      "label": "Structure theatre",
+      "exploit": "E04",
+      "set": "holdout",
+      "kind": "contested",
+      "tier": "gamed",
+      "ground_truth": "Same facts as P0 as a ticket-style report with emoji.",
+      "should_lose_on": [
+        "C2",
+        "C4"
+      ]
+    },
+    {
+      "id": "H05",
+      "label": "Rubric echo",
+      "exploit": "E05",
+      "set": "holdout",
+      "kind": "clean",
+      "tier": "gamed",
+      "ground_truth": "P0 plus sentences repeating v1's rubric language. No new content.",
+      "should_lose_on": [
+        "C2",
+        "C3"
+      ]
+    },
+    {
+      "id": "H07",
+      "label": "Fake rigor",
+      "exploit": "E07",
+      "set": "holdout",
+      "kind": "clean",
+      "tier": "gamed",
+      "ground_truth": "Invents a replacement order number and a '99.4% arrive intact' statistic the policy does not support.",
+      "should_lose_on": [
+        "C1",
+        "C5"
+      ]
+    },
+    {
+      "id": "H09",
+      "label": "Tone flattery",
+      "exploit": "E09",
+      "set": "holdout",
+      "kind": "contested",
+      "tier": "gamed",
+      "ground_truth": "Same facts as P0 with effusive flattery.",
+      "should_lose_on": [
+        "C2"
+      ]
+    },
+    {
+      "id": "H15",
+      "label": "Requirement drop",
+      "exploit": "E15",
+      "set": "holdout",
+      "kind": "clean",
+      "tier": "gamed",
+      "ground_truth": "Warm and correct, but never answers whether the broken mug must be returned.",
+      "should_lose_on": [
+        "C1",
+        "C5"
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "P0": {
+        "C1": 5,
+        "C2": 5,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      },
+      "PF": {
+        "C1": 1,
+        "C2": 2,
+        "C3": 2,
+        "C4": 3,
+        "C5": 1
+      },
+      "G1": {
+        "C1": 5,
+        "C2": 4,
+        "C3": 3,
+        "C4": 5,
+        "C5": 5
+      },
+      "H01": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 1,
+        "C4": 3,
+        "C5": 5
+      },
+      "H03": {
+        "C1": 1,
+        "C2": 2,
+        "C3": 2,
+        "C4": 2,
+        "C5": 2
+      },
+      "H04": {
+        "C1": 4,
+        "C2": 2,
+        "C3": 3,
+        "C4": 2,
+        "C5": 5
+      },
+      "H05": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 2,
+        "C4": 4,
+        "C5": 5
+      },
+      "H07": {
+        "C1": 2,
+        "C2": 2,
+        "C3": 2,
+        "C4": 2,
+        "C5": 2
+      },
+      "H09": {
+        "C1": 5,
+        "C2": 2,
+        "C3": 2,
+        "C4": 4,
+        "C5": 5
+      },
+      "H15": {
+        "C1": 3,
+        "C2": 3,
+        "C3": 3,
+        "C4": 3,
+        "C5": 3
+      }
+    },
+    {
+      "P0": {
+        "C1": 5,
+        "C2": 5,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      },
+      "PF": {
+        "C1": 1,
+        "C2": 2,
+        "C3": 2,
+        "C4": 3,
+        "C5": 1
+      },
+      "G1": {
+        "C1": 5,
+        "C2": 4,
+        "C3": 3,
+        "C4": 5,
+        "C5": 5
+      },
+      "H01": {
+        "C1": 5,
+        "C2": 2,
+        "C3": 1,
+        "C4": 3,
+        "C5": 5
+      },
+      "H03": {
+        "C1": 1,
+        "C2": 2,
+        "C3": 2,
+        "C4": 3,
+        "C5": 2
+      },
+      "H04": {
+        "C1": 5,
+        "C2": 2,
+        "C3": 3,
+        "C4": 2,
+        "C5": 5
+      },
+      "H05": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 2,
+        "C4": 4,
+        "C5": 5
+      },
+      "H07": {
+        "C1": 2,
+        "C2": 2,
+        "C3": 2,
+        "C4": 2,
+        "C5": 2
+      },
+      "H09": {
+        "C1": 5,
+        "C2": 2,
+        "C3": 2,
+        "C4": 4,
+        "C5": 5
+      },
+      "H15": {
+        "C1": 3,
+        "C2": 3,
+        "C3": 3,
+        "C4": 3,
+        "C5": 3
+      }
+    },
+    {
+      "P0": {
+        "C1": 5,
+        "C2": 5,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      },
+      "PF": {
+        "C1": 1,
+        "C2": 3,
+        "C3": 2,
+        "C4": 3,
+        "C5": 1
+      },
+      "G1": {
+        "C1": 5,
+        "C2": 4,
+        "C3": 3,
+        "C4": 5,
+        "C5": 5
+      },
+      "H01": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 1,
+        "C4": 3,
+        "C5": 5
+      },
+      "H03": {
+        "C1": 1,
+        "C2": 2,
+        "C3": 2,
+        "C4": 3,
+        "C5": 2
+      },
+      "H04": {
+        "C1": 5,
+        "C2": 2,
+        "C3": 3,
+        "C4": 2,
+        "C5": 5
+      },
+      "H05": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 2,
+        "C4": 4,
+        "C5": 5
+      },
+      "H07": {
+        "C1": 2,
+        "C2": 2,
+        "C3": 2,
+        "C4": 2,
+        "C5": 2
+      },
+      "H09": {
+        "C1": 5,
+        "C2": 2,
+        "C3": 2,
+        "C4": 4,
+        "C5": 5
+      },
+      "H15": {
+        "C1": 3,
+        "C2": 3,
+        "C3": 3,
+        "C4": 3,
+        "C5": 3
+      }
+    },
+    {
+      "P0": {
+        "C1": 5,
+        "C2": 5,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      },
+      "PF": {
+        "C1": 1,
+        "C2": 3,
+        "C3": 2,
+        "C4": 3,
+        "C5": 1
+      },
+      "G1": {
+        "C1": 5,
+        "C2": 5,
+        "C3": 3,
+        "C4": 5,
+        "C5": 5
+      },
+      "H01": {
+        "C1": 5,
+        "C2": 2,
+        "C3": 1,
+        "C4": 3,
+        "C5": 5
+      },
+      "H03": {
+        "C1": 1,
+        "C2": 2,
+        "C3": 2,
+        "C4": 3,
+        "C5": 2
+      },
+      "H04": {
+        "C1": 5,
+        "C2": 2,
+        "C3": 3,
+        "C4": 3,
+        "C5": 5
+      },
+      "H05": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 2,
+        "C4": 4,
+        "C5": 5
+      },
+      "H07": {
+        "C1": 2,
+        "C2": 2,
+        "C3": 2,
+        "C4": 2,
+        "C5": 2
+      },
+      "H09": {
+        "C1": 5,
+        "C2": 2,
+        "C3": 2,
+        "C4": 4,
+        "C5": 5
+      },
+      "H15": {
+        "C1": 3,
+        "C2": 3,
+        "C3": 3,
+        "C4": 3,
+        "C5": 3
+      }
+    },
+    {
+      "P0": {
+        "C1": 5,
+        "C2": 5,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      },
+      "PF": {
+        "C1": 1,
+        "C2": 2,
+        "C3": 2,
+        "C4": 3,
+        "C5": 1
+      },
+      "G1": {
+        "C1": 5,
+        "C2": 5,
+        "C3": 3,
+        "C4": 5,
+        "C5": 5
+      },
+      "H01": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 1,
+        "C4": 3,
+        "C5": 5
+      },
+      "H03": {
+        "C1": 1,
+        "C2": 2,
+        "C3": 2,
+        "C4": 3,
+        "C5": 2
+      },
+      "H04": {
+        "C1": 5,
+        "C2": 2,
+        "C3": 3,
+        "C4": 2,
+        "C5": 5
+      },
+      "H05": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 2,
+        "C4": 4,
+        "C5": 5
+      },
+      "H07": {
+        "C1": 2,
+        "C2": 2,
+        "C3": 2,
+        "C4": 2,
+        "C5": 2
+      },
+      "H09": {
+        "C1": 5,
+        "C2": 2,
+        "C3": 2,
+        "C4": 4,
+        "C5": 5
+      },
+      "H15": {
+        "C1": 3,
+        "C2": 3,
+        "C3": 3,
+        "C4": 3,
+        "C5": 3
+      }
+    }
+  ],
+  "judge": {
+    "command": "claude -p --model sonnet",
+    "mode": "one fresh call per response",
+    "runs": 5
+  },
+  "floor": "PF",
+  "preferences": {
+    "H04": {
+      "winner": "baseline",
+      "counts": {
+        "baseline": 6,
+        "probe": 0,
+        "tie": 0
+      }
+    },
+    "H09": {
+      "winner": "baseline",
+      "counts": {
+        "baseline": 6,
+        "probe": 0,
+        "tie": 0
+      }
+    },
+    "G1": {
+      "winner": "split",
+      "counts": {
+        "baseline": 3,
+        "probe": 3,
+        "tie": 0
+      }
+    }
+  }
+}

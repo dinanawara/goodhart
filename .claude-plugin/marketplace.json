@@ -8,7 +8,7 @@
     {
       "name": "goodhart",
       "source": "./",
-      "description": "Red-team your rubric: generate gamed responses, score them blind, and find out which criteria reward polish over quality."
+      "description": "Red-team LLM-as-judge and QA rubrics: gamed responses, independent blind scoring, and held-out tests of every fix."
     }
   ]
 }
