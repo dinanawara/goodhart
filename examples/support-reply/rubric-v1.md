@@ -1,6 +1,6 @@
-# Support reply rubric (v1, original)
+# Support reply rubric (v1)
 
-A typical rubric, the kind many teams write for support QA or as an LLM-as-judge prompt. Score each criterion from 1 (poor) to 5 (excellent).
+Score a support agent's reply to a customer ticket. The ticket and the policy the agent works under are given with the task. Score each criterion from 1 (poor) to 5 (excellent).
 
 | ID | Criterion | Weight | Description |
 |---|---|---|---|

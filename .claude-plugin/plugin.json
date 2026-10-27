@@ -5,8 +5,8 @@
   "author": {
     "name": "Dina Nawara"
   },
-  "homepage": "https://github.com/YOUR-GITHUB-USERNAME/goodhart",
-  "repository": "https://github.com/YOUR-GITHUB-USERNAME/goodhart",
+  "homepage": "https://github.com/dinanawara/goodhart",
+  "repository": "https://github.com/dinanawara/goodhart",
   "license": "MIT",
   "keywords": ["rubric", "evaluation", "llm-as-judge", "evals", "grading", "red-team", "goodhart"]
 }

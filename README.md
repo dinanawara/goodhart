@@ -57,14 +57,14 @@ Your original rubric is never edited in place.
 **Claude Code (plugin):**
 
 ```bash
-/plugin marketplace add YOUR-GITHUB-USERNAME/goodhart
+/plugin marketplace add dinanawara/goodhart
 /plugin install goodhart@goodhart
 ```
 
 **Any agent that reads `SKILL.md` (Claude Code, Cursor, Codex, and others) via the skills CLI:**
 
 ```bash
-npx skills add YOUR-GITHUB-USERNAME/goodhart
+npx skills add dinanawara/goodhart
 ```
 
 **Manual:** copy `skills/goodhart/` into `~/.claude/skills/` (all projects) or `.claude/skills/` (one project).
