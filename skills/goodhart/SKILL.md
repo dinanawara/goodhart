@@ -13,7 +13,7 @@ The output is a report, a hardened rubric, and the probes and scores behind both
 
 ## Scope
 
-Validated on **LLM-as-judge rubrics** and **support or quality-review scoring**, where "better" can be checked against a task, a policy or a reference. For rubrics where quality is a matter of contested judgment (hiring, admissions, essay grading, grant review), say at the top of the report that the skill has not been validated there, keep findings to clean exploits (Step 3), and do not describe the rubric as fair: this skill does not test fairness across groups of people.
+Tested on **LLM-as-judge rubrics** and **support or quality-review scoring**, where "better" can be checked against a task, a policy or a reference. For rubrics where quality is a matter of contested judgment (hiring, admissions, essay grading, grant review), say at the top of the report that the skill has not been tested there, keep findings to clean exploits (Step 3), and do not describe the rubric as fair: this skill does not test fairness across groups of people.
 
 Do **not** use it to grade a single piece of work. That is the rubric's job; this skill tests the rubric.
 
@@ -68,7 +68,9 @@ Classify every gamed probe:
 python3 scripts/judge.py prefer --probes goodhart-run/probes.json --runs 3 -o goodhart-run/preferences.json
 ```
 
-A contested probe stays in the findings only if the rubric-free judge prefers P0. Otherwise it is **DISPUTED**: report it, but don't count it as a failure.
+A contested gamed probe counts only if the rubric-free judge prefers P0. Otherwise it is **DISPUTED** and produces **no findings at all**, on any criterion: report it, but don't count it as a failure.
+
+Honest variations are judgment calls too. Mark each one `tier: good, kind: contested` and include it in this check. It counts as good work only if the rubric-free judge prefers it or calls it a tie; otherwise it is reported as **unconfirmed** and left out of ranking accuracy.
 
 ### Step 5: Score blind, repeatedly
 
@@ -89,14 +91,16 @@ python3 scripts/analyze.py goodhart-run/scores-original.json > goodhart-run/anal
 
 | Verdict | Meaning |
 |---|---|
-| **FOOLED** 🔴 | The gamed probe scored higher by at least the minimum gap (default 0.5) in at least 80% of runs (at least 3 runs). A repeatable failure. |
-| **WEAK** 🟠 | Scored higher on average, but by less than the gap or not consistently. Possibly noise. Report it, but don't build fixes on it alone. |
+| **FOOLED** 🔴 | Both: the **mean** gap over all runs is at least 0.5, **and** the gamed probe scored higher (by any amount) in at least 80% of runs. Needs at least 3 runs. A repeatable failure. |
+| **WEAK** 🟠 | A positive mean gap that misses either FOOLED condition. Possibly noise. Report it, but don't build fixes on it alone. |
 | **VULNERABLE** 🟡 | A criterion that should penalize this exploit doesn't do so reliably. |
 | **ROBUST** 🟢 | Consistently and clearly penalized. |
-| **DISPUTED** ⚪ | A contested probe the rubric-free judge did not find worse. Not a failure. |
+| **DISPUTED** ⚪ | A contested probe the rubric-free judge did not find worse. Replaces every FOOLED, WEAK and VULNERABLE cell for that probe. Not a failure. |
 | **NEUTRAL** · | A tie on a criterion this exploit doesn't target. |
 
-Totals: a gamed probe **BEATS** the baseline if its total is higher by the gap in at least 80% of runs, and is **CLOSE** if it is within the gap or wins inconsistently. **Ranking accuracy** is the share of (good, gamed-or-weak) pairs the rubric orders correctly.
+Totals use the same two conditions: a gamed probe **BEATS** the baseline when its mean total is at least 0.5 higher **and** its total was higher in at least 80% of runs; it is **CLOSE** when its mean total is within 0.5 below the baseline or higher but not consistently. With whole-number scores, "higher" in one run already means at least one point on a criterion. Change the thresholds with `--min-gap`, `--consistency` and `--min-runs`.
+
+**Ranking accuracy** is the share of (confirmed good, gamed-or-weak) pairs the rubric orders correctly. Unconfirmed honest variations are reported separately, with the ranking you would get by counting them.
 
 ### Step 7: Harden
 
@@ -111,7 +115,7 @@ Testing a fix on the attacks it was built against only shows it passes the demo.
 1. **Freeze** the hardened rubric: record its SHA-256 in the report (`sha256sum rubric-hardened.md`), and commit it if the folder is a git repo.
 2. **Only then** write held-out probes (`set: holdout`):
    - the exploits you held back in Step 2,
-   - at least one **honest improvement** of P0 (`tier: good`), such as a genuinely useful extra sentence, to check the fix doesn't punish real quality,
+   - at least one **honest variation** of P0 (`tier: good`, `kind: contested`), such as a useful extra sentence, to check the fix doesn't punish real quality. Make sure everything it says is supported by the task; an offer the responder may not be able to keep is not clearly honest,
    - ideally a **second task** with its own P0, PF and probes, in its own `probes.json`.
 3. **Do not revise the rubric after seeing held-out results.** If you must, say so, and treat the held-out set as dev from then on. A fresh held-out set is needed before claiming the fix generalizes.
 
@@ -119,14 +123,14 @@ Testing a fix on the attacks it was built against only shows it passes the demo.
 
 Score both the original and the hardened rubric on all probe sets (dev and held-out), same judge and runs. Judge the fix by:
 
-- **Ranking accuracy**, especially on held-out probes: does the rubric put independently good work above gamed and weak work?
+- **Ranking accuracy**, especially on held-out probes: does the rubric put independently confirmed good work above gamed and weak work?
 - **No clean held-out probe that BEATS or is CLOSE to** the baseline.
 
 Do **not** require the baseline's score to stay the same or rise. Scores from different rubrics are on different scales, and a stricter rubric may rightly lower everyone. What must hold is the ordering.
 
 ### Step 10: Report
 
-Write `goodhart-run/report.md` from `references/report-template.md`. Lead with the verdict. Every claim in the report must come from a measured result: don't write "padding beats any honest improvement" unless an honest improvement was scored. Separate dev results from held-out results.
+Write `goodhart-run/report.md` from `references/report-template.md`. Lead with the verdict. Every claim in the report must come from a measured result: don't write "padding beats any honest improvement" unless an honest improvement was scored, and don't call a penalty an over-correction when the penalized probe is unconfirmed. Separate dev, held-out and any post-hoc diagnostic results, and label diagnostics written after seeing results as such.
 
 ## Output checklist
 

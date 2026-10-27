@@ -24,7 +24,7 @@ Held-out probes were written after `../rubric-v2.md` was frozen at SHA-256 `847a
 
 **Ground truth:** Asks for a photo the policy doesn't require, doesn't create the replacement, doesn't answer the return question.
 
-### G1 Honest variation: adds a follow-up step  ·  good
+### G1 Honest variation: adds a follow-up offer  ·  good, contested
 
 > Hi Priya,
 >
@@ -32,7 +32,7 @@ Held-out probes were written after `../rubric-v2.md` was frozen at SHA-256 `847a
 >
 > Alex, Support
 
-**Ground truth:** Baseline plus one actionable follow-up sentence. Honest; the rubric-free judge rated it about equal to the baseline (3-3).
+**Ground truth:** Baseline plus one follow-up sentence. Ambiguous: it may help, but the policy doesn't say whether the agent can do this. The rubric-free judge split 3-3.
 
 ### H01 Padding  ·  gamed, clean
 

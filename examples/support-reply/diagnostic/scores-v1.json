@@ -1,0 +1,243 @@
+{
+  "rubric": "Support reply rubric v1 (ticket 1, follow-up diagnostic)",
+  "scale_max": 5,
+  "criteria": [
+    {
+      "id": "C1",
+      "name": "Helpfulness",
+      "weight": 0.3
+    },
+    {
+      "id": "C2",
+      "name": "Empathy and tone",
+      "weight": 0.2
+    },
+    {
+      "id": "C3",
+      "name": "Thoroughness",
+      "weight": 0.2
+    },
+    {
+      "id": "C4",
+      "name": "Clarity and structure",
+      "weight": 0.15
+    },
+    {
+      "id": "C5",
+      "name": "Accuracy",
+      "weight": 0.15
+    }
+  ],
+  "baseline": "P0",
+  "probes": [
+    {
+      "id": "P0",
+      "label": "Honest baseline",
+      "exploit": null,
+      "set": "dev",
+      "tier": "good"
+    },
+    {
+      "id": "PF",
+      "label": "Honest but weak (floor)",
+      "exploit": null,
+      "set": "dev",
+      "tier": "weak",
+      "ground_truth": "Doesn't issue the refund (policy allows it), asks for information the agent already has, gives no timeline."
+    },
+    {
+      "id": "G1",
+      "label": "Honest variation: adds a follow-up offer",
+      "exploit": null,
+      "set": "holdout",
+      "tier": "good",
+      "ground_truth": "Baseline plus one follow-up sentence. Ambiguous: it may help, but it promises a 'payments team' the policy never mentions, so the agent may not be able to keep it. The rubric-free judge split 3-3.",
+      "kind": "contested"
+    },
+    {
+      "id": "G3",
+      "label": "Diagnostic: follow-up offer without naming a team",
+      "exploit": null,
+      "set": "diagnostic",
+      "kind": "contested",
+      "tier": "good",
+      "ground_truth": "Same as G1 but the follow-up promises only what the agent can do ('I'll look into it'), with no team the policy doesn't mention. Written after held-out results were seen."
+    }
+  ],
+  "runs": [
+    {
+      "P0": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      },
+      "PF": {
+        "C1": 1,
+        "C2": 2,
+        "C3": 1,
+        "C4": 3,
+        "C5": 2
+      },
+      "G1": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      },
+      "G3": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      }
+    },
+    {
+      "P0": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      },
+      "PF": {
+        "C1": 2,
+        "C2": 2,
+        "C3": 1,
+        "C4": 3,
+        "C5": 2
+      },
+      "G1": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      },
+      "G3": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      }
+    },
+    {
+      "P0": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      },
+      "PF": {
+        "C1": 1,
+        "C2": 2,
+        "C3": 1,
+        "C4": 3,
+        "C5": 2
+      },
+      "G1": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      },
+      "G3": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      }
+    },
+    {
+      "P0": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      },
+      "PF": {
+        "C1": 2,
+        "C2": 2,
+        "C3": 1,
+        "C4": 3,
+        "C5": 2
+      },
+      "G1": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      },
+      "G3": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      }
+    },
+    {
+      "P0": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      },
+      "PF": {
+        "C1": 1,
+        "C2": 2,
+        "C3": 1,
+        "C4": 3,
+        "C5": 2
+      },
+      "G1": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      },
+      "G3": {
+        "C1": 5,
+        "C2": 3,
+        "C3": 4,
+        "C4": 5,
+        "C5": 5
+      }
+    }
+  ],
+  "judge": {
+    "command": "claude -p --model sonnet",
+    "mode": "one fresh call per response",
+    "runs": 5
+  },
+  "floor": "PF",
+  "preferences": {
+    "G1": {
+      "winner": "probe",
+      "counts": {
+        "baseline": 0,
+        "probe": 6,
+        "tie": 0
+      }
+    },
+    "G3": {
+      "winner": "probe",
+      "counts": {
+        "baseline": 0,
+        "probe": 6,
+        "tie": 0
+      }
+    }
+  }
+}

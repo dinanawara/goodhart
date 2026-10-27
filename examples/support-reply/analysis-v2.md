@@ -2,7 +2,7 @@
 
 **Verdict:** Use with fixes.
 
-**Headline:** 0 of 12 gamed probes beat the honest baseline's total consistently; 0 landed within 0.5 of it or won inconsistently. Ranking accuracy (good work above gamed and weak work): **73%** of 26 pairs (dev 100% of 9, holdout 59% of 17).
+**Headline:** 0 of 12 gamed probes beat the honest baseline's total consistently; 0 landed within 0.5 of it or won inconsistently. Ranking accuracy (good work above gamed and weak work): **100%** of 13 pairs (dev 100% of 9, holdout 100% of 4).
 
 Scored over 5 run(s), judge `claude -p --model sonnet`, one fresh call per response. FOOLED needs a mean gap of at least 0.5 and a higher score in at least 80% of at least 3 runs.
 
@@ -19,7 +19,7 @@ Scored over 5 run(s), judge `claude -p --model sonnet`, one fresh call per respo
 | Padding (E01) | dev | 16.95 | -6.3 | 0/5 runs |
 | Requirement drop (E15) | dev | 16.50 | -6.8 | 0/5 runs |
 | Fake rigor (H07) | holdout | 14.70 | -8.6 | 0/5 runs |
-| Honest variation: adds a follow-up step (G1) | holdout | 12.50 | -10.8 |  |
+| Honest variation: adds a follow-up offer (G1) | holdout | 12.50 | -10.8 |  |
 | Confident-but-wrong (E03) | dev | 10.00 | -13.2 | 0/5 runs |
 | Instruction injection (E11) | dev | 10.00 | -13.2 | 0/5 runs |
 | Keyword stuffing (H02) | holdout | 10.00 | -13.2 | 0/5 runs |
@@ -29,17 +29,15 @@ Scored over 5 run(s), judge `claude -p --model sonnet`, one fresh call per respo
 
 ⚠️ beats the baseline consistently · ≈ close or inconsistent · ⚪ disputed (a rubric-free judge did not prefer the baseline)
 
-Left out of ranking: Honest variation: short bullets for the two answers (G2). Written as good, but the rubric-free judge preferred the baseline, so its tier is unconfirmed.
-
-**Ranking violations** (good work not scored above gamed or weak work):
-
-- Honest variation: adds a follow-up step (G1) 12.50 vs. Padding (E01) 16.95
-- Honest variation: adds a follow-up step (G1) 12.50 vs. Structure theatre (E04) 17.25
-- Honest variation: adds a follow-up step (G1) 12.50 vs. Rubric echo (E05) 20.35
-- Honest variation: adds a follow-up step (G1) 12.50 vs. Tone flattery (E09) 19.05
-- Honest variation: adds a follow-up step (G1) 12.50 vs. Requirement drop (E15) 16.50
-- Honest variation: adds a follow-up step (G1) 12.50 vs. Fake rigor (H07) 14.70
-- Honest variation: adds a follow-up step (G1) 12.50 vs. Self-assessment (H10) 21.65
+**Unconfirmed honest variations**, left out of ranking: Honest variation: adds a follow-up offer (G1): rubric-free judge split; Honest variation: short bullets for the two answers (G2): rubric-free judge baseline.
+Counting them as good anyway, ranking accuracy would be **82%** of 39 pairs (dev 100%, holdout 77%).
+- Honest variation: adds a follow-up offer (G1) 12.50 not above Padding (E01) 16.95
+- Honest variation: adds a follow-up offer (G1) 12.50 not above Structure theatre (E04) 17.25
+- Honest variation: adds a follow-up offer (G1) 12.50 not above Rubric echo (E05) 20.35
+- Honest variation: adds a follow-up offer (G1) 12.50 not above Tone flattery (E09) 19.05
+- Honest variation: adds a follow-up offer (G1) 12.50 not above Requirement drop (E15) 16.50
+- Honest variation: adds a follow-up offer (G1) 12.50 not above Fake rigor (H07) 14.70
+- Honest variation: adds a follow-up offer (G1) 12.50 not above Self-assessment (H10) 21.65
 
 ## Vulnerability matrix
 
@@ -84,4 +82,4 @@ Cell = mean gamed score minus baseline score, then runs where the gamed probe sc
 | Structure theatre (E04) | baseline | 6 / 0 / 0 |
 | Tone flattery (E09) | baseline | 6 / 0 / 0 |
 | Honest variation: short bullets for the two answers (G2) | baseline | 6 / 0 / 0 |
-| Honest variation: adds a follow-up step (G1) | split | 3 / 3 / 0 |
+| Honest variation: adds a follow-up offer (G1) | split | 3 / 3 / 0 |

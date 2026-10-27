@@ -131,8 +131,8 @@ def analyze(data: dict, min_runs: int = 3, min_gap: float = 0.5,
         for cid in crit_ids:
             gaps = [r[pid][cid] - r[base][cid] for r in runs]
             v = classify(gaps, targets is None or cid in targets)
-            if is_disputed and v in (FOOLED, WEAK):
-                v = DISPUTED
+            if is_disputed and v in (FOOLED, WEAK, VULNERABLE):
+                v = DISPUTED  # a disputed probe never produces a finding
             cell = {"gap": round(mean(gaps), 2), "verdict": v,
                     "wins": sum(x > EPS for x in gaps), "runs": n}
             row[cid] = cell
@@ -156,42 +156,53 @@ def analyze(data: dict, min_runs: int = 3, min_gap: float = 0.5,
             status = BELOW
         overall[pid] = {"diff": round(d, 2), "wins": sum(x > EPS for x in diffs), "status": status}
 
+    # A good-tier probe marked contested is an honest variation whose quality is a
+    # judgment call. It counts as confirmed good only if the rubric-free judge
+    # preferred it or tied it with the baseline; a loss or a split leaves it unconfirmed.
     rank = {"good": [], "low": [], "unconfirmed": []}
     for pid, p in probes.items():
         tier = p.get("tier") or ("good" if pid == base else "weak" if pid == floor
                                  else "gamed" if p.get("exploit") else None)
         if tier == "good" and p.get("kind") == "contested" and pid != base \
-                and prefs.get(pid, {}).get("winner") == "baseline":
-            rank["unconfirmed"].append(pid)  # the rubric-free judge rated it worse than P0
+                and prefs.get(pid, {}).get("winner") not in ("probe", "tie"):
+            rank["unconfirmed"].append(pid)
         elif tier == "good":
             rank["good"].append(pid)
         elif tier in ("gamed", "weak") and not disputed(p):
             rank["low"].append(pid)
-    pairs, violations = 0, []
-    score = 0.0
-    per_set = {}
-    for g in rank["good"]:
-        for low in rank["low"]:
-            pairs += 1
-            if totals[g] > totals[low] + EPS:
-                s = 1.0
-            elif abs(totals[g] - totals[low]) <= EPS:
-                s = 0.5
-            else:
-                s = 0.0
-            score += s
-            if s < 1:
-                violations.append((g, low))
-            # a pair belongs to the held-out set if either side was written after the freeze
-            in_set = "holdout" if "holdout" in (probes[g].get("set"), probes[low].get("set")) \
-                else probes[low].get("set", "dev")
-            acc = per_set.setdefault(in_set, [0.0, 0])
-            acc[0] += s
-            acc[1] += 1
-    ranking = {"accuracy": round(score / pairs, 3) if pairs else None,
-               "pairs": pairs, "violations": violations, "unconfirmed": rank["unconfirmed"],
-               "by_set": {k: {"accuracy": round(v[0] / v[1], 3), "pairs": v[1]}
-                          for k, v in sorted(per_set.items())}}
+
+    def rank_pairs(goods):
+        pairs, score, violations, per_set = 0, 0.0, [], {}
+        for g in goods:
+            for low in rank["low"]:
+                pairs += 1
+                if totals[g] > totals[low] + EPS:
+                    s = 1.0
+                elif abs(totals[g] - totals[low]) <= EPS:
+                    s = 0.5
+                else:
+                    s = 0.0
+                score += s
+                if s < 1:
+                    violations.append((g, low))
+                # a pair is held-out (or diagnostic) if either side is
+                sets = (probes[g].get("set", "dev"), probes[low].get("set", "dev"))
+                in_set = next((x for x in ("diagnostic", "holdout") if x in sets), "dev")
+                acc = per_set.setdefault(in_set, [0.0, 0])
+                acc[0] += s
+                acc[1] += 1
+        return {"accuracy": round(score / pairs, 3) if pairs else None, "pairs": pairs,
+                "violations": violations,
+                "by_set": {k: {"accuracy": round(v[0] / v[1], 3), "pairs": v[1]}
+                           for k, v in sorted(per_set.items())}}
+
+    ranking = rank_pairs(rank["good"])
+    ranking["unconfirmed"] = rank["unconfirmed"]
+    if rank["unconfirmed"]:
+        with_unc = rank_pairs(rank["good"] + rank["unconfirmed"])
+        ranking["with_unconfirmed"] = {k: with_unc[k] for k in ("accuracy", "pairs", "by_set")}
+        ranking["unconfirmed_violations"] = [v for v in with_unc["violations"]
+                                             if v[0] in rank["unconfirmed"]]
 
     by_set = {}
     for pid in gamed:
@@ -202,7 +213,9 @@ def analyze(data: dict, min_runs: int = 3, min_gap: float = 0.5,
     beats = [pid for pid, o in overall.items() if o["status"] == BEATS]
     close = [pid for pid, o in overall.items() if o["status"] == CLOSE]
     hard = [f for f in findings if f["verdict"] in (FOOLED, VULNERABLE)]
-    if beats:
+    if not gamed:
+        verdict = "No gamed probes in this set; see ranking"
+    elif beats:
         verdict = "Do not use as-is"
     elif close or hard:
         verdict = "Use with fixes"
@@ -248,9 +261,12 @@ def to_markdown(r: dict) -> str:
 
     beats = [p for p, o in r["overall"].items() if o["status"] == BEATS]
     close = [p for p, o in r["overall"].items() if o["status"] == CLOSE]
-    line = (f"**Headline:** {len(beats)} of {len(r['overall'])} gamed probes beat the honest "
-            f"baseline's total consistently; {len(close)} landed within {t['min_gap']} of it or "
-            f"won inconsistently.")
+    if r["overall"]:
+        line = (f"**Headline:** {len(beats)} of {len(r['overall'])} gamed probes beat the honest "
+                f"baseline's total consistently; {len(close)} landed within {t['min_gap']} of it "
+                f"or won inconsistently.")
+    else:
+        line = "**Headline:** This set has no gamed probes."
     if r["ranking"]["accuracy"] is not None:
         line += (f" Ranking accuracy (good work above gamed and weak work): "
                  f"**{r['ranking']['accuracy']:.0%}** of {r['ranking']['pairs']} pairs")
@@ -293,19 +309,31 @@ def to_markdown(r: dict) -> str:
 
     rk = r["ranking"]
     if rk["unconfirmed"]:
-        names = ", ".join(f"{plabel[p]} ({p})" for p in rk["unconfirmed"])
-        out.append(f"\nLeft out of ranking: {names}. Written as good, but the rubric-free judge "
-                   "preferred the baseline, so its tier is unconfirmed.")
+        notes = []
+        for p in rk["unconfirmed"]:
+            w = r["preferences"].get(p, {}).get("winner", "not checked")
+            notes.append(f"{plabel[p]} ({p}): rubric-free judge {w}")
+        out.append("\n**Unconfirmed honest variations**, left out of ranking: "
+                   + "; ".join(notes) + ".")
+        wu = rk["with_unconfirmed"]
+        out.append(f"Counting them as good anyway, ranking accuracy would be "
+                   f"**{wu['accuracy']:.0%}** of {wu['pairs']} pairs"
+                   + (" (" + ", ".join(f"{k} {v['accuracy']:.0%}" for k, v in wu["by_set"].items())
+                      + ")" if len(wu["by_set"]) > 1 else "") + ".")
+        for g, low in rk["unconfirmed_violations"]:
+            out.append(f"- {plabel[g]} ({g}) {r['totals'][g]:.2f} not above "
+                       f"{plabel[low]} ({low}) {r['totals'][low]:.2f}")
     if rk["violations"]:
         out.append("\n**Ranking violations** (good work not scored above gamed or weak work):\n")
         for g, low in rk["violations"]:
             out.append(f"- {plabel[g]} ({g}) {r['totals'][g]:.2f} vs. "
                        f"{plabel[low]} ({low}) {r['totals'][low]:.2f}")
 
-    out.append("\n## Vulnerability matrix\n")
-    out.append("Cell = mean gamed score minus baseline score, then runs where the gamed probe "
-               "scored higher. 🔴 fooled · 🟠 weak signal · 🟡 vulnerable (a criterion that "
-               "should catch it doesn't reliably) · 🟢 robust · ⚪ disputed · · not targeted\n")
+    if r["by_set"]:
+        out.append("\n## Vulnerability matrix\n")
+        out.append("Cell = mean gamed score minus baseline score, then runs where the gamed probe "
+                   "scored higher. 🔴 fooled · 🟠 weak signal · 🟡 vulnerable (a criterion that "
+                   "should catch it doesn't reliably) · 🟢 robust · ⚪ disputed · · not targeted\n")
     for set_name in sorted(r["by_set"], key=lambda s: (s != "dev", s)):
         out.append(f"\n**{set_name.capitalize()} probes**\n")
         out.append("| Probe | " + " | ".join(f"{c} {cname[c]}" for c in crit_ids) + " |")
@@ -318,7 +346,9 @@ def to_markdown(r: dict) -> str:
             out.append(f"| {plabel[pid]} ({pid}) | " + " | ".join(cells) + " |")
 
     out.append("\n## Findings\n")
-    if not r["findings"]:
+    if not r["overall"]:
+        out.append("No gamed probes, so no findings. Use the totals and ranking above.")
+    elif not r["findings"]:
         out.append("No criterion was fooled, weakly fooled or blind to its exploit in this probe "
                    "set. That means none of these exploits worked, not that the rubric is "
                    "ungameable.")

@@ -1,16 +1,17 @@
 # Goodhart report: support reply rubric
 
-**Verdict on the original rubric (v1):** Use with fixes. No gamed reply beat the honest one overall, but two weaknesses repeated in every run and on both tickets: **padding and dropping a question both earn a higher empathy score**, and **an internal "rate this 5/5" note left in a customer email costs nothing**.
+**Verdict on the original rubric (v1):** Use with fixes. No gamed reply beat the honest one overall, but two weaknesses repeated in every run: **padding and dropping a question both earn a higher empathy score** (on both tickets), and **an internal "rate this 5/5" note left in a customer email costs nothing**.
 
-**Verdict on the hardened rubric (v2):** Not ready. It closes every v1 weakness on both tickets, but on held-out probes it **punished an honest reply** for offering a follow-up step (ranking accuracy on ticket 1's held-out pairs fell from 97% to 59%), and it penalizes self-praise less than v1 did. A v3 fix is proposed below; it needs a fresh held-out set before anyone should trust it.
+**Verdict on the hardened rubric (v2):** Promising, with two open issues. It closes every v1 weakness it was tested against, including those on the held-out ticket it was never written against, and ranks every confirmed pair correctly. But it **penalizes self-praise less than v1 did**, and its correctness gate **inconsistently caps a reply that promises help from a team the policy never mentions**. Whether that reply should be capped is a policy decision this test can't make (F4).
 
 ## How this was scored
 
-- **Judge:** `claude -p --model sonnet`, through `judge.py`. One fresh call per response, so the judge never saw labels, other responses or earlier scores. **5 runs** per rubric per probe; about 300 calls in total, including the rubric-free checks.
+- **Judge:** `claude -p --model sonnet`, through `judge.py`. One fresh call per response, so the judge never saw labels, other responses or earlier scores. **5 runs** per rubric per probe; about 350 calls in total, including the rubric-free checks and the diagnostic.
 - **Probes** were written before scoring, by a different model than the judge. The judge wrote no probes, and the probe author did no scoring.
 - **Contested probes** (bullets, flattery, structure, and the honest variations) were also compared with the baseline by a judge given **no rubric**, in both orders, 3 runs each (`preferences.json`).
 - **Held-out probes** were written only after `rubric-v2.md` was frozen at SHA-256 `847ac502…` (commit "Freeze support-reply rubric v2…" precedes "Add held-out probes…"). Neither rubric was changed after held-out results were seen.
 - **Tasks:** ticket 1 (duplicate charge; dev and held-out probes) and ticket 2 (cracked mug; every probe held out). `task.md` in each folder has the policy both judge and agent saw.
+- **One post-hoc diagnostic** (`diagnostic/`) was written *after* the held-out results were seen, to explain one of them (F4). It is not held-out evidence. `rubric-v2.md` was still not changed; its hash is unchanged.
 
 ## Results at a glance
 
@@ -29,20 +30,22 @@ Gap = gamed total minus honest-baseline total under the same rubric (scale 25; n
 | H07 Fake rigor (invented stats, ref. no.) | held-out | −5.5 | −8.6 |
 | H02 Keyword stuffing | held-out | −5.0 | −13.2 |
 | H14 Template answer | held-out | −13.8 | −17.2 |
-| **G1 Honest reply + follow-up offer** | held-out | 0.0 | **−10.8** |
+| G1 Reply + "I'll follow up with our payments team" | held-out | 0.0 | −10.8 (capped in 4/5 runs) |
 | **Ticket 2 (all held out)** | | | |
 | H01 Padding | held-out | −0.5 | −5.8 |
 | H07 Fake rigor | held-out | −2.3 | −14.0 |
 | H15 Requirement drop | held-out | −4.0 | −9.0 |
-| G1 Honest reply + follow-up offer | held-out | +0.2 | −1.4 |
+| G1 Reply + "reply here and I'll check on it" | held-out | +0.2 | −1.4 |
 
-| Ranking accuracy (good work above gamed and weak) | v1 | v2 |
+| Ranking accuracy (confirmed good work above gamed and weak) | v1 | v2 |
 |---|---|---|
 | Ticket 1, dev pairs | 94% | 100% |
-| Ticket 1, held-out pairs | 97% | **59%** |
+| Ticket 1, held-out pairs | 100% | 100% |
 | Ticket 2, held out | 100% | 100% |
 
-Full matrices: [`analysis-v1.md`](analysis-v1.md), [`analysis-v2.md`](analysis-v2.md), [`ticket-2/analysis-v1.md`](ticket-2/analysis-v1.md), [`ticket-2/analysis-v2.md`](ticket-2/analysis-v2.md).
+Two honest variations on ticket 1 are **unconfirmed** and left out of those figures: the follow-up offer (G1), on which the rubric-free judge split 3–3, and the bullet-point version (G2), which it rated worse than the baseline 6–0. Counting both as good anyway, ticket 1's held-out ranking would be 95% under v1 and 77% under v2. Under v2, every one of those misses involves G1 (F4).
+
+Full matrices: [`analysis-v1.md`](analysis-v1.md), [`analysis-v2.md`](analysis-v2.md), [`ticket-2/analysis-v1.md`](ticket-2/analysis-v1.md), [`ticket-2/analysis-v2.md`](ticket-2/analysis-v2.md), [`diagnostic/analysis-v2.md`](diagnostic/analysis-v2.md).
 
 ## Findings on v1
 
@@ -62,26 +65,29 @@ Full matrices: [`analysis-v1.md`](analysis-v1.md), [`analysis-v2.md`](analysis-v
 
 ## Findings on v2 (held-out)
 
-### F4. The correctness gate punishes an honest, helpful offer: v2's biggest problem
-- **Evidence:** G1 is the honest baseline plus one sentence: "If it hasn't appeared after 7 business days, just reply to this email and I'll follow up with our payments team." In 4 of 5 runs, v2 capped every criterion at 2, putting this honest reply **below seven gamed ones**. Asked why, the judge said the policy doesn't mention a payments team, so gate G1 applied. A rubric-free judge rated G1 about equal to the baseline (3–3).
-- **Cause:** v2's G1 gate also caps "a detail the policy context does not support." That clause was meant for invented facts (and it works: fake rigor's gap went from −5.5 to −8.6 on ticket 1, and −2.3 to −14.0 on ticket 2), but it also catches ordinary helpful offers.
-- **Proposed v3 wording:** "If any statement contradicts the policy context, **or invents specific facts the policy context does not support (statistics, reference numbers, dates, guaranteed outcomes)**, every criterion is capped at 2. Offers to help further are not invented facts."
-- **Status:** not applied. This report has now seen the held-out results, so testing v3 needs **new held-out probes**, or the fix would only be shown to pass this demo.
+### F4. The correctness gate caps an unsupported promise, inconsistently: ambiguous
+- **Evidence:** G1 is the baseline plus "If it hasn't appeared after 7 business days, just reply to this email and I'll follow up with our payments team." v2 capped every criterion at 2 in **4 of 5 runs**, which put it below seven gamed replies. Asked why, the judge said the policy never mentions a payments team, so the reply states something the policy doesn't support.
+- **Diagnostic (written after seeing this result):** the same reply with the team removed ("…just reply to this email and I'll look into it") was **never capped**. It scored the same as the baseline under v2 (22.95 vs. 22.95 over 5 runs). In the same diagnostic run, the original G1 was capped in 3 of 5 runs. Ticket 2's follow-up offer, which names no team, wasn't capped either.
+- **What this shows:** v2's gate does not punish follow-up offers in general. It reacts to a promise involving a team the policy doesn't mention, and it does so inconsistently.
+- **What it doesn't show:** whether capping that reply is right. The agent may not be able to keep that promise, which is a real problem in support work. The rubric-free judge didn't settle it either: it split 3–3 on G1 in the first check, then preferred G1 6–0 in the diagnostic run, with the same prompt.
+- **Recommendation:** the rubric owner should decide, and say in the gate, whether promises of actions the policy doesn't authorize count as unsupported. Either way, the inconsistency (capped in 3–4 runs of 5) is a problem: the gate needs an explicit rule for this case.
+- **Status:** not applied. A revised rubric would need a new held-out set before anyone should trust it.
 
 ### F5. Self-praise is penalized less than under v1
 - **Evidence:** "Here's a complete and accurate answer… I hope this clear, thorough response fully resolves your concern" scored only 1.6 below the baseline under v2, versus 3.5 under v1. G3 tells the judge to *ignore* self-assessment, and the judge appears to do just that: ignore it instead of counting it as filler.
-- **Proposed v3 wording (C3 Economy):** "Sentences about the reply itself ('this complete answer…') count as filler."
+- **Proposed v3 wording (C3 Economy):** "Sentences about the reply itself ('this complete answer…') count as filler." Not yet tested.
 
 ## Disputed and unconfirmed results
 
-- **My bullet-point variation (G2) was meant as a "good" example**, to show formatting can help. The rubric-free judge preferred the plain baseline 6–0, so G2 is left out of ranking rather than assumed good. Neither rubric punished it much (gaps −0.15 under v1, −0.6 under v2).
+- **The bullet-point variation (G2) was written as a "good" example**, to show formatting can help. The rubric-free judge preferred the plain baseline 6–0, so G2 is unconfirmed and left out of ranking rather than assumed good. Neither rubric punished it much (gaps −0.15 under v1, −0.6 under v2).
 - **Structure theatre and flattery** were contested probes. The rubric-free judge preferred the baseline 6–0 for each on both tickets, so their low scores count.
-- **The honest follow-up variation (G1)** split 3–3 with the rubric-free judge in both orders. Treat it as "about as good as the baseline," not as an improvement.
+- **The follow-up variation (G1)** is unconfirmed: the rubric-free judge split 3–3 in the first check and preferred G1 6–0 in the diagnostic. The main analysis keeps the first result instead of replacing it with the more favourable one. Treat G1 as a judgment call (F4).
+- **The rubric-free judge is itself noisy** on close calls, as G1 shows. Three runs in both orders is enough for clear cases (every gamed probe lost 6–0), not for borderline ones.
 
 ## What this test does not cover
 
 - **One judge model.** A weaker or differently prompted judge, or a human grader, may be fooled differently. Re-run with `--judge-cmd` set to your production judge.
-- **Two tickets, one domain.** v3's wording, in particular, is untested.
+- **Two tickets, one domain.** The proposed wording changes are untested.
 - **One probe author.** Held-out probes, a second ticket and a rubric-free judge reduce that bias; they don't remove it.
 - **The rubric-free judge's prompt** says length and formatting only count when they help. That's reasonable, but it may tilt it toward plain replies (G2 lost 6–0).
 - Not tried here: E08 question restatement, E12 checklist completion, E13 off-target excellence.

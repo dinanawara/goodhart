@@ -57,6 +57,30 @@ class Verdicts(unittest.TestCase):
         r = analyze.analyze(make([(3, 3)] * 5, [(2, 3)] * 5, should_lose_on=["A"]))
         self.assertEqual(cell(r, "B"), analyze.NEUTRAL)
 
+    def test_fooled_rule_is_mean_gap_plus_direction(self):
+        # The documented rule: mean gap >= 0.5 AND higher in >= 80% of runs.
+        # higher in 4/5 runs, mean +0.8 -> FOOLED (one run may tie)
+        r = analyze.analyze(make([(3, 3)] * 5, [(4, 3)] * 4 + [(3, 3)]))
+        self.assertEqual(cell(r), analyze.FOOLED)
+        # one big win, mean +0.6, but higher in only 1/5 runs -> WEAK
+        r = analyze.analyze(make([(3, 3)] * 5, [(6, 3)] + [(3, 3)] * 4))
+        self.assertEqual(cell(r), analyze.WEAK)
+        # higher in 4/5 runs but a big loss pulls the mean to +0.4 -> WEAK
+        r = analyze.analyze(make([(3, 3)] * 5, [(4, 3)] * 4 + [(1, 3)]))
+        self.assertEqual(cell(r), analyze.WEAK)
+
+    def test_disputed_probe_produces_no_findings(self):
+        # contested probe ties on a targeted criterion; rubric-free judge preferred it
+        d = make([(3, 3)] * 5, [(3, 4)] * 5, kind="contested", should_lose_on=["A", "B"])
+        d["preferences"] = {"E01": {"winner": "probe"}}
+        r = analyze.analyze(d)
+        self.assertEqual(cell(r, "A"), analyze.DISPUTED)  # would be VULNERABLE
+        self.assertEqual(cell(r, "B"), analyze.DISPUTED)  # would be FOOLED
+        self.assertEqual(r["findings"], [])
+        self.assertEqual(r["overall"]["E01"]["status"], analyze.DISPUTED)
+        self.assertNotEqual(r["verdict"], "Use with fixes")
+        self.assertNotEqual(r["verdict"], "Do not use as-is")
+
     def test_contested_needs_independent_preference(self):
         d = make([(3, 3)] * 5, [(4, 3)] * 5, kind="contested")
         self.assertEqual(cell(analyze.analyze(d)), analyze.DISPUTED)  # no preference data
@@ -89,19 +113,28 @@ class Ranking(unittest.TestCase):
         d = make([(4, 4)] * 3, [(3, 3)] * 3)
         d["probes"] += [{"id": "PF", "exploit": None, "tier": "weak"},
                         {"id": "G1", "exploit": None, "tier": "good"},
-                        {"id": "G2", "exploit": None, "tier": "good", "kind": "contested"}]
+                        {"id": "G2", "exploit": None, "tier": "good", "kind": "contested"},
+                        {"id": "G3", "exploit": None, "tier": "good", "kind": "contested"},
+                        {"id": "G4", "exploit": None, "tier": "good", "kind": "contested"}]
         for run in d["runs"]:
             run["PF"] = {"A": 1, "B": 1}
             run["G1"] = {"A": 2, "B": 2}  # good, but scored below the gamed probe
             run["G2"] = {"A": 1, "B": 1}
+            run["G3"] = {"A": 1, "B": 1}
+            run["G4"] = {"A": 5, "B": 5}
         d["floor"] = "PF"
-        d["preferences"] = {"G2": {"winner": "baseline"}}
+        d["preferences"] = {"G2": {"winner": "baseline"}, "G3": {"winner": "split"},
+                            "G4": {"winner": "tie"}}
         r = analyze.analyze(d)
-        # pairs: P0>E01, P0>PF, G1<E01, G1>PF  -> 3/4; G2 is left out
-        self.assertEqual(r["ranking"]["pairs"], 4)
-        self.assertAlmostEqual(r["ranking"]["accuracy"], 0.75)
-        self.assertEqual(r["ranking"]["unconfirmed"], ["G2"])
+        # confirmed good: P0, G1, G4 (tie confirms). pairs vs E01 and PF:
+        # P0 2/2, G1 1/2, G4 2/2 -> 5/6; G2 (lost) and G3 (split) are unconfirmed
+        self.assertEqual(r["ranking"]["pairs"], 6)
+        self.assertAlmostEqual(r["ranking"]["accuracy"], 0.833)
+        self.assertEqual(sorted(r["ranking"]["unconfirmed"]), ["G2", "G3"])
         self.assertIn(("G1", "E01"), r["ranking"]["violations"])
+        # counting the unconfirmed ones too: G2 and G3 tie PF and lose to E01 -> +1/4
+        self.assertEqual(r["ranking"]["with_unconfirmed"]["pairs"], 10)
+        self.assertAlmostEqual(r["ranking"]["with_unconfirmed"]["accuracy"], 0.6)
 
 
 class Validation(unittest.TestCase):
@@ -134,8 +167,12 @@ class CLI(unittest.TestCase):
         self.assertEqual(self.run_cli(os.path.join(t1, "scores-v1.json"), "--fail-on", "fooled")[0], 1)
         # v2 is clean on the held-out second ticket...
         self.assertEqual(self.run_cli(os.path.join(t2, "scores-v2.json"), "--fail-on", "any")[0], 0)
-        # ...but over-corrects on ticket 1's held-out honest variation
-        self.assertEqual(self.run_cli(os.path.join(t1, "scores-v2.json"), "--min-ranking", "0.9")[0], 1)
+        # ...and ranks every confirmed pair on ticket 1 correctly; the ambiguous
+        # follow-up offer is reported separately, not counted against it
+        self.assertEqual(self.run_cli(os.path.join(t1, "scores-v2.json"), "--min-ranking", "0.9")[0], 0)
+        r = analyze.analyze(analyze.load(os.path.join(t1, "scores-v2.json")))
+        self.assertIn("G1", r["ranking"]["unconfirmed"])
+        self.assertLess(r["ranking"]["with_unconfirmed"]["accuracy"], 0.9)
 
     def test_committed_analyses_are_current(self):
         for folder in (EXAMPLE, os.path.join(EXAMPLE, "ticket-2")):

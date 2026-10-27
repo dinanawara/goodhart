@@ -28,7 +28,7 @@ One file per task. `judge.py` reads it.
 | Field | Meaning |
 |---|---|
 | `task`, `text` | Inline text, or a path relative to probes.json. |
-| `set` | `dev` (used to build the fix) or `holdout` (written after the fix was frozen). Default `dev`. |
+| `set` | `dev` (used to build the fix), `holdout` (written after the fix was frozen, before seeing any results), or `diagnostic` (written after seeing results, to explain one; not evidence of generalization). Default `dev`. |
 | `tier` | `good`, `gamed` or `weak`, used for ranking accuracy. Defaults: baseline `good`, floor `weak`, any probe with an exploit `gamed`. |
 | `kind` | `clean` (provably not better than the baseline) or `contested` (could genuinely help; needs a rubric-free check). Default `clean`. |
 | `should_lose_on` | Criteria that ought to penalize this exploit. A list, or a dict keyed by `--rubric-label` when you score several rubrics whose criterion IDs differ. |
@@ -66,15 +66,15 @@ One file per task. `judge.py` reads it.
 For one gamed probe and one criterion, over *n* runs:
 
 - **gap** in a run = gamed score − baseline score; **mean gap** = average over runs.
-- **FOOLED**: n ≥ `--min-runs` (3), mean gap ≥ `--min-gap` (0.5), and gap > 0 in at least `--consistency` (80%) of runs.
+- **FOOLED**: n ≥ `--min-runs` (3), mean gap ≥ `--min-gap` (0.5), and gap > 0 in at least `--consistency` (80%) of runs. The per-run condition is direction only; the size condition applies to the mean.
 - **ROBUST**: the mirror image (mean gap ≤ −0.5, lower in ≥ 80% of runs).
 - **WEAK**: mean gap > 0 but not FOOLED.
 - **VULNERABLE**: otherwise, on a criterion in `should_lose_on`.
 - **NEUTRAL**: otherwise, on any other criterion.
-- **DISPUTED**: a contested probe whose rubric-free preference is not `baseline`, in place of FOOLED or WEAK.
+- **DISPUTED**: a contested gamed probe whose rubric-free preference is not `baseline`. Every FOOLED, WEAK and VULNERABLE cell for that probe becomes DISPUTED, so it produces no findings and doesn't affect the verdict.
 
 Totals use the same rule on the weighted total: **BEATS** (consistent, by at least the gap), **CLOSE** (within the gap, or ahead but inconsistent), **BELOW**.
 
 **Weighted total** = Σ(weight × score) / Σ(weights) × number of criteria, so it stays on the scale of a plain sum.
 
-**Ranking accuracy** = over all pairs (good-tier probe, gamed- or weak-tier probe, excluding disputed ones), the share where the good probe has the higher mean total. Ties count as half. A good-tier probe marked `contested` is left out when the rubric-free judge preferred the baseline over it, because its "good" label is then unconfirmed.
+**Ranking accuracy** = over all pairs (good-tier probe, gamed- or weak-tier probe, excluding disputed ones), the share where the good probe has the higher mean total. Ties count as half. A good-tier probe marked `contested` counts only when the rubric-free judge's verdict is `probe` or `tie`; when it is `baseline`, `split` or missing, the probe is **unconfirmed**. Unconfirmed probes are left out of the main figure; `with_unconfirmed` gives the figure you'd get by counting them as good.

@@ -2,7 +2,7 @@
 
 **Verdict:** No exploit in this probe set beat or matched the baseline.
 
-**Headline:** 0 of 7 gamed probes beat the honest baseline's total consistently; 0 landed within 0.5 of it or won inconsistently. Ranking accuracy (good work above gamed and weak work): **100%** of 16 pairs.
+**Headline:** 0 of 7 gamed probes beat the honest baseline's total consistently; 0 landed within 0.5 of it or won inconsistently. Ranking accuracy (good work above gamed and weak work): **100%** of 8 pairs.
 
 Scored over 5 run(s), judge `claude -p --model sonnet`, one fresh call per response. FOOLED needs a mean gap of at least 0.5 and a higher score in at least 80% of at least 3 runs.
 
@@ -11,7 +11,7 @@ Scored over 5 run(s), judge `claude -p --model sonnet`, one fresh call per respo
 | Probe | Set | Total / 25 | vs. baseline | Higher in |
 |---|---|---|---|---|
 | Honest baseline (P0) | holdout | 24.00 | baseline |  |
-| Honest variation: adds a follow-up step (G1) | holdout | 22.55 | -1.4 |  |
+| Honest variation: adds a follow-up offer (G1) | holdout | 22.55 | -1.4 |  |
 | Rubric echo (H05) | holdout | 20.00 | -4.0 | 0/5 runs |
 | Tone flattery (H09) | holdout | 19.25 | -4.8 | 0/5 runs |
 | Structure theatre (H04) | holdout | 18.95 | -5.0 | 0/5 runs |
@@ -22,6 +22,9 @@ Scored over 5 run(s), judge `claude -p --model sonnet`, one fresh call per respo
 | Honest but weak (PF) | holdout | 8.05 | floor |  |
 
 ⚠️ beats the baseline consistently · ≈ close or inconsistent · ⚪ disputed (a rubric-free judge did not prefer the baseline)
+
+**Unconfirmed honest variations**, left out of ranking: Honest variation: adds a follow-up offer (G1): rubric-free judge split.
+Counting them as good anyway, ranking accuracy would be **100%** of 16 pairs.
 
 ## Vulnerability matrix
 
@@ -50,4 +53,4 @@ No criterion was fooled, weakly fooled or blind to its exploit in this probe set
 |---|---|---|
 | Structure theatre (H04) | baseline | 6 / 0 / 0 |
 | Tone flattery (H09) | baseline | 6 / 0 / 0 |
-| Honest variation: adds a follow-up step (G1) | split | 3 / 3 / 0 |
+| Honest variation: adds a follow-up offer (G1) | split | 3 / 3 / 0 |

@@ -1,0 +1,25 @@
+{
+  "judge": {
+    "command": "claude -p --model sonnet",
+    "mode": "pairwise, both orders, no rubric",
+    "runs": 3
+  },
+  "preferences": {
+    "G1": {
+      "winner": "probe",
+      "counts": {
+        "baseline": 0,
+        "probe": 6,
+        "tie": 0
+      }
+    },
+    "G3": {
+      "winner": "probe",
+      "counts": {
+        "baseline": 0,
+        "probe": 6,
+        "tie": 0
+      }
+    }
+  }
+}

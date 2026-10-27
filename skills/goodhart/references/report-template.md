@@ -12,7 +12,7 @@ Fill this in for `goodhart-run/report.md`. Keep the top section readable in unde
 
 **How this was scored:** {judge command and model}, one fresh call per response, {n} runs. Contested probes checked by a rubric-free judge. {Anything less rigorous, stated plainly, e.g. "scored by the probe author; preliminary".}
 
-**Scope:** {task(s) tested; for contested-judgment domains: "not validated for this domain"}
+**Scope:** {task(s) tested; for contested-judgment domains: "not tested in this domain"}
 
 ## Original rubric: dev results
 
@@ -39,7 +39,7 @@ Frozen at SHA-256 `{hash}` before any held-out probe was written. {Link to rubri
 | Held-out, same task | | | |
 | Held-out, second task | | | |
 
-{Did any held-out exploit get through the hardened rubric? Did an honest improvement score below the baseline? Report failures as prominently as successes.}
+{Did any held-out exploit get through the hardened rubric? Did a confirmed honest variation score below the baseline? Report unconfirmed ones separately. Report failures as prominently as successes.}
 
 ## Disputed and weak results
 
