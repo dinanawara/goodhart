@@ -36,8 +36,22 @@ def load(path: str) -> dict:
             data = json.load(fh)
     except json.JSONDecodeError as exc:
         raise ScoresError(f"{path} is not valid JSON: {exc}") from exc
+    normalize(data)
     validate(data)
     return data
+
+
+def normalize(data: dict) -> None:
+    """Accept files that list the baseline or floor only in their scores, not in 'probes'."""
+    runs, probes = data.get("runs"), data.get("probes")
+    if not runs or not isinstance(probes, list):
+        return
+    listed = {p.get("id") for p in probes}
+    for key, tier in (("baseline", "good"), ("floor", "weak")):
+        pid = data.get(key)
+        if pid and pid not in listed and all(pid in r for r in runs):
+            probes.insert(0, {"id": pid, "exploit": None, "tier": tier,
+                              "label": "Honest baseline" if key == "baseline" else "Honest but weak"})
 
 
 def validate(data: dict) -> None:

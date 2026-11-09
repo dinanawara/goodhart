@@ -82,6 +82,15 @@ npx skills add dinanawara/goodhart
 
 **Claude.ai:** zip the `skills/goodhart/` folder and upload it as a custom skill in your Claude settings.
 
+### Two modes
+
+Goodhart picks a mode on its own:
+
+- **Script mode** (preferred): when the skill's `scripts/` folder is on disk and Python can run, two small scripts do the judging and the arithmetic. Use this for repeatable runs and CI.
+- **Portable mode:** anywhere else (Claude.ai, tools without Python, platforms that load a skill without its files), the agent judges each response in a fresh subagent and computes the verdicts from the rules written in `SKILL.md`. The prompts and rules are identical to the scripts'; a test keeps them in sync.
+
+Both save scores in the same format, so you can analyze a portable-mode run with the scripts later.
+
 ## Use it
 
 Ask in plain language:

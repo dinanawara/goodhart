@@ -137,6 +137,16 @@ class Ranking(unittest.TestCase):
         self.assertAlmostEqual(r["ranking"]["with_unconfirmed"]["accuracy"], 0.6)
 
 
+class Normalize(unittest.TestCase):
+    def test_baseline_only_in_runs_is_accepted(self):
+        d = make([(3, 3)] * 3, [(4, 4)] * 3)
+        d["probes"] = [p for p in d["probes"] if p["id"] != "P0"]
+        analyze.normalize(d)
+        analyze.validate(d)
+        r = analyze.analyze(d)
+        self.assertEqual(r["overall"]["E01"]["status"], analyze.BEATS)
+
+
 class Validation(unittest.TestCase):
     def test_missing_score(self):
         d = make([(3, 3)], [(3, 3)])

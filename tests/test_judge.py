@@ -1,5 +1,6 @@
 """judge.py tests with a fake judge command, so they run offline and for free."""
 import json
+import re
 import os
 import sys
 import tempfile
@@ -44,6 +45,29 @@ class JudgeTests(unittest.TestCase):
         with open(self.probes, "w") as fh:
             json.dump(probes, fh)
         self.cmd = f"{sys.executable} {self.fake}"
+
+    def test_skill_md_prompts_match_script(self):
+        """Portable mode uses the prompts written in SKILL.md; they must match judge.py."""
+        with open(os.path.join(ROOT, "skills", "goodhart", "SKILL.md"), encoding="utf-8") as fh:
+            blocks = re.findall(r"```text\n(.*?)\n```", fh.read(), re.S)
+        self.assertEqual(len(blocks), 2, "expected two ```text prompt blocks in SKILL.md")
+        score = judge.SCORE_PROMPT.format(
+            task="{task}", rubric="{rubric}", response="{response}", scale_max="{scale_max}",
+            criteria="{criteria}", example='"C1": n, "C2": n, …')
+        prefer = judge.PREFER_PROMPT.format(task="{task}", a="{a}", b="{b}")
+        self.assertEqual(blocks[0], score)
+        self.assertEqual(blocks[1], prefer)
+
+    def test_skill_md_rules_use_analyzer_defaults(self):
+        import analyze
+        import inspect
+        sig = inspect.signature(analyze.analyze).parameters
+        self.assertEqual(sig["min_runs"].default, 3)
+        self.assertEqual(sig["min_gap"].default, 0.5)
+        self.assertEqual(sig["consistency"].default, 0.8)
+        with open(os.path.join(ROOT, "skills", "goodhart", "SKILL.md"), encoding="utf-8") as fh:
+            text = fh.read()
+        self.assertIn("Defaults: minimum runs 3, minimum gap 0.5, consistency 80%.", text)
 
     def test_parse_criteria(self):
         crits = judge.parse_criteria("| C1 | Accuracy (H1) | 60% | x |\n| C2 | Tone | 40% |")
