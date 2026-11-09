@@ -19,8 +19,8 @@ One file per task. `judge.py` reads it.
     {"id": "E01", "label": "Padding", "exploit": "E01", "set": "dev", "tier": "gamed",
      "kind": "clean", "should_lose_on": {"original": ["C3"], "hardened": ["C3"]},
      "ground_truth": "Same facts as P0, 4x longer.", "text": "…"},
-    {"id": "G1", "label": "Honest improvement", "exploit": null, "set": "holdout", "tier": "good",
-     "text": "…"}
+    {"id": "G1", "label": "Honest variation", "exploit": null, "set": "holdout", "tier": "good",
+     "kind": "contested", "text": "…"}
   ]
 }
 ```

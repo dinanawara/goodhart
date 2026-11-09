@@ -33,7 +33,7 @@ We ran Goodhart on a typical support-reply rubric (*Helpfulness, Empathy, Thorou
 |---|---|---|
 | Padded reply, Empathy/Tone score vs. honest reply | +1.0, higher in 5/5 runs | −2.4, lower in 5/5 |
 | Reply that skips a question, Empathy/Tone score | +1.0, higher in 5/5 runs | −2.0, lower in 5/5 |
-| Good work ranked above gamed and weak work | 100% of pairs | 100% of pairs |
+| Honest reply ranked above every gamed and weak reply | 8 of 8 pairs | 8 of 8 pairs |
 
 The held-out probes also found two things the dev probes missed:
 

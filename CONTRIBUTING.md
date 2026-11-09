@@ -35,6 +35,7 @@ The most useful new domains are other LLM-as-judge setups: code review, summariz
 python3 -m unittest discover -s tests -v
 ```
 
+- The judge prompts and verdict rules are written twice: in the scripts and in `SKILL.md`, for portable mode. Change both together; the tests fail if they drift apart.
 - If you change the plugin manifests, run `claude plugin validate .` from the repo root.
 
 ## Exploit and pattern IDs are stable
